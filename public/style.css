@@ -188,10 +188,20 @@ main { max-width: 980px; margin: 0 auto; padding: 28px; }
 .row:nth-child(odd) { background: rgba(255,255,255,0.015); }
 
 .col-time { color: var(--amber); font-weight: 500; }
+<<<<<<< HEAD
+.col-flight { color: var(--text); letter-spacing: 0.03em; display: flex; flex-direction: column; gap: 2px; }
+.flight-airline { font-family: var(--font-display); font-size: 11px; color: var(--text-dim); letter-spacing: normal; }
+.col-route { color: var(--text); font-family: var(--font-display); font-size: 14px; }
+.col-route .arrow { color: var(--text-dim); margin: 0 6px; }
+.col-status { font-size: 12.5px; }
+.status-ontime { color: var(--teal); }
+.status-delayed { color: #e8a95e; font-weight: 600; }
+=======
 .col-flight { color: var(--text); letter-spacing: 0.03em; }
 .col-route { color: var(--text); font-family: var(--font-display); font-size: 14px; }
 .col-route .arrow { color: var(--text-dim); margin: 0 6px; }
 .col-status { color: var(--teal); font-size: 12.5px; }
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 
 .empty-state, .loading-state, .error-state {
   padding: 40px 18px;
