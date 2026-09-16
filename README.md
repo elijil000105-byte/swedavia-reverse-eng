@@ -1,115 +1,92 @@
-# Flygtavlan
+# Flyget
 
-<<<<<<< HEAD
-En egen avgångar/ankomster-tavla. Node/Express-backend + ren HTML/CSS/JS-frontend,
-ingen build-process. Stödjer två datakällor:
+En reverse engineerad variant av Swedavias flygplatssajt, byggd på AeroDataBox
+via RapidAPI. Skolprojekt, inte knutet till Swedavia.
 
-- **AeroDataBox** (rekommenderas) – riktig schemadata, gate/terminal och äkta
-  förseningar. Kräver en gratis API-nyckel, se nedan.
-- **OpenSky Network + adsbdb.com** – helt gratis och nyckelfritt, används
-  automatiskt som reservläge om ingen AeroDataBox-nyckel är satt.
+Ren HTML, CSS och JavaScript. Inga ramverk, ingen byggkedja, inga beroenden.
 
-## Skaffa en gratis AeroDataBox-nyckel
+## Struktur
 
-1. Skapa ett konto på [rapidapi.com](https://rapidapi.com/) (gratis).
-2. Sök upp **AeroDataBox** i marketplace och öppna fliken *Pricing*.
-3. Välj **Basic**-planen (0 $/mån, 600 API-units).
-4. Klicka *Subscribe*. RapidAPI kan be om kortverifiering för vissa konton,
-   men Basic-planen debiteras inte.
-5. Under fliken *Endpoints* hittar du din `x-rapidapi-key`.
-6. Kopiera `.env.example` till `.env` och klistra in nyckeln som
-   `AERODATABOX_KEY=din-nyckel`. Lägg **aldrig** en nyckel direkt i koden,
-   i git, eller dela den i en chatt – betrakta den som exponerad om du gör det,
-   och regenerera den i så fall på RapidAPI.
+```
+flyget/
+├── index.html        markup
+├── css/style.css     designtokens, layout, mörkt läge
+├── js/config.js      API-nyckel, tidsfönster, flygplatslista
+├── js/state.js       applikationstillstånd, localStorage, tidsfunktioner
+├── js/api.js         anrop mot AeroDataBox + normalisering av svaret
+├── js/demo.js        genererad reservtrafik när API:t inte går att nå
+├── js/ui.js          statuslogik och all rendering
+├── js/app.js         laddning, URL-tillstånd, händelser, tangentbord
+└── server.js         proxy + statisk server för lokal körning
+```
 
-Utan nyckel fungerar appen ändå, den använder då OpenSky-reservläget nedan.
+Skripten laddas som vanliga `<script>`-taggar i den ordningen, inte som ES-moduler.
+Det gör att `index.html` funkar även om du bara dubbelklickar på filen.
 
-## Viktig begränsning i reservläget (OpenSky) — läs detta
-=======
-En egen avgångar/ankomster-tavla, byggd runt [OpenSky Networks](https://opensky-network.org/)
-gratis, nyckelfria API. Node/Express-backend + ren HTML/CSS/JS-frontend, ingen build-process.
+## Köra
 
-## Viktig begränsning — läs detta först
->>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
+**Direkt i webbläsaren:** öppna `index.html`. Fungerar om RapidAPI släpper
+igenom anropet från webbläsaren, annars slår demoläget in automatiskt.
 
-Swedavias tavla bygger på flygbolagens **schemadata**: den vet vilka flyg som *ska* gå,
-och jämför det mot verkligheten för att räkna ut förseningar.
-
-OpenSky har ingen sådan schemadata. Det är ett nätverk av ADS-B-mottagare som bara vet
-**var flygplan faktiskt befinner sig och har befunnit sig**. Det betyder att den här
-tavlan:
-
-- visar **senaste 3 timmarnas faktiska** avgångar/ankomster, inte kommande schemalagda flyg
-- **inte kan visa förseningar** (det finns ingen tidtabell att jämföra mot)
-<<<<<<< HEAD
-- kan sakna mindre flygplatser helt om de har få ADS-B-mottagare i närheten
-
-**Ursprung/destination:** OpenSkys egna fält för det (`estDepartureAirport`/
-`estArrivalAirport`) är bara en gissning utifrån radartäckning och saknas ofta.
-Backend kompletterar därför med ett andra, gratis och nyckelfritt uppslag mot
-[adsbdb.com](https://www.adsbdb.com/), som kopplar flygnummer (callsign) till en
-rutt via en community-databas. Den täcker de flesta reguljära linjeflyg men missar
-ofta privatflyg, taxiflyg, frakt och militärtrafik - dyker "Okänd flygplats" upp
-är det oftast därför, inte ett fel i koden.
-
-=======
-- ibland saknar destination/ursprungsflygplats om ADS-B-täckningen var dålig just då
-- kan sakna mindre flygplatser helt om de har få ADS-B-mottagare i närheten
-
->>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
-Om du vill ha riktig schema- och förseningsdata måste du byta datakälla till något som
-**AeroDataBox** eller **AviationStack** (båda kräver en gratis API-nyckel). Backend-lagret
-är byggt så att det går att byta ut `fetchOpenSky()` i `server.js` mot ett anrop till en
-sådan tjänst utan att röra frontend.
-
-## Kom igång lokalt
-
-Kräver Node.js 18 eller senare.
+**Med proxy (rekommenderat):**
 
 ```bash
-npm install
-npm start
+node server.js
 ```
 
-Öppna sedan `http://localhost:3000`.
+Sätt sedan `proxyBase: "http://localhost:8080"` i `js/config.js`.
+Nyckeln kan läggas i miljövariabeln `RAPIDAPI_KEY` istället för i koden:
 
-Vill du ha ett högre dagligt anropstak mot OpenSky (valfritt): skapa ett gratiskonto på
-opensky-network.org, kopiera `.env.example` till `.env` och fyll i
-`OPENSKY_USERNAME`/`OPENSKY_PASSWORD`.
-
-## Hur det hänger ihop
-
-```
-flight-board/
-├── server.js          Express-server: serverar frontend + proxyar/cachar OpenSky
-├── data/airports.json Lista över valbara flygplatser (lägg gärna till fler)
-├── public/
-│   ├── index.html
-│   ├── style.css
-│   └── app.js         Sökruta, tabbar, hämtning och rendering av tavlan
-├── package.json
-└── .env.example
+```bash
+RAPIDAPI_KEY=din_nyckel node server.js
 ```
 
-Backend cachar varje flygplats/riktning i 60 sekunder i minnet, för att hålla sig inom
-OpenSkys dagliga anropsgräns (ca 400 anrop/dygn för anonym åtkomst). Frontend hämtar om
-sig automatiskt var 60:e sekund.
+## API:t
 
-## Lägga till fler flygplatser
+Sidan använder en endpoint, FIDS:
 
-Lägg till en rad i `data/airports.json` med ICAO-kod, IATA-kod, namn, stad, land och
-koordinater. ICAO-koden är det som faktiskt skickas till OpenSky.
+```
+GET /flights/airports/icao/{icao}/{från}/{till}
+    ?direction=Both&withCancelled=true&withLeg=true&withCodeshared=false
+```
 
-## Driftsättning
+Tiderna skickas som lokal tid utan tidszon, `2026-09-16T08:00`. Fönstret får
+vara max 12 timmar, därav `CONFIG.hours`.
 
-Appen är en helt vanlig Node/Express-app och kan köras på t.ex. Render, Railway, Fly.io
-eller en egen VPS:
+Svaret har `departures` och `arrivals`. Varje post beskriver antingen sin egen
+rörelse i `departure`/`arrival` eller motparten i `movement`, beroende på
+anrop. `normalize()` i `js/api.js` hanterar båda formerna och plattar ut dem
+till ett internt objekt, så resten av koden aldrig behöver bry sig.
 
-1. Pusha koden till ett Git-repo.
-2. Skapa en ny webbtjänst hos leverantören, peka på repot.
-3. Build command: `npm install`. Start command: `npm start`.
-4. Sätt ev. `OPENSKY_USERNAME`/`OPENSKY_PASSWORD` som miljövariabler i leverantörens
-   dashboard (lägg **aldrig** in dem direkt i koden).
+Statussträngarna från API:t (`Expected`, `Boarding`, `GateClosed`, `Delayed`,
+`Canceled`, `Departed`, `Arrived`, `EnRoute`, `Approaching`, `Diverted`)
+översätts i `statusOf()` till fyra visuella lägen: `ok`, `info`, `late`, `can`.
+Försening räknas alltid som skillnaden mellan `scheduledTime` och
+`revisedTime`, inte från statusfältet, eftersom det uppdateras snabbare.
 
-Eftersom nyckeln/inloggningen (om du använder någon) bara finns i backend, är den aldrig
-synlig i webbläsaren — till skillnad från om man anropar OpenSky direkt från frontend.
+## Demoläget
+
+Om anropet misslyckas genererar `demoFlights()` trafik med riktiga rutter och
+flygbolag per flygplats, tidsfördelad efter morgon- och eftermiddagsrusning.
+Slumpen är seedad på flygplatskod plus datum, så tavlan ser likadan ut hela
+dagen istället för att hoppa vid varje omladdning. En banner talar om att det
+är demodata.
+
+## Egna funktioner utöver originalet
+
+- alla tio flygplatser i samma vy
+- stapeldiagram över avgångstäthet kommande 12 timmar med nu-markör
+- avresekalkylator som räknar bakåt från revised time
+- kötid i säkerhetskontrollen skattad från faktisk avgångstäthet
+- bevakade flyg sparade i localStorage
+- länkbart tillstånd via `?ap=ESSA&v=dep&q=CPH`
+- tangentbord: `/` sök, `A` avgående, `D` ankommande, `R` uppdatera
+- mörkt läge, mobillayout, synlig fokusmarkering
+
+## Att bygga vidare på
+
+- `/flights/number/{nummer}/{datum}` för att följa ett flyg hela vägen mellan
+  två flygplatser istället för bara vid en
+- terminalkarta med gate-positioner
+- notiser vid gateändring via Notification API
+- cacha svaret i sessionStorage för att spara anrop mot kvoten
