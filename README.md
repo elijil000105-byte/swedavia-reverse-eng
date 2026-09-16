@@ -1,5 +1,7 @@
 # Flyget
 
+http://13.51.13.142/?ap=ESSA&v=dep
+
 En reverse engineerad variant av Swedavias flygplatssajt, byggd på AeroDataBox
 via RapidAPI. Skolprojekt, inte knutet till Swedavia.
 
