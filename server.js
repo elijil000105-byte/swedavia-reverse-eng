@@ -1,6 +1,7 @@
 // server.js
 // Enkel Express-backend som:
 //  1) serverar frontend-filerna i /public
+<<<<<<< HEAD
 //  2) hämtar flygdata från en av två källor:
 //     - AeroDataBox (om AERODATABOX_KEY är satt): riktig schemadata,
 //       gate/terminal och äkta förseningar (schemalagt vs. faktiskt).
@@ -9,6 +10,11 @@
 //       ingen schemadata och ingen riktig förseningsberäkning.
 //  Nycklar/inloggningar skickas ALDRIG till webbläsaren - allt går via
 //  den här servern, som läser dem från miljövariabler.
+=======
+//  2) fungerar som proxy mot OpenSky Network så att ev. inloggningsuppgifter
+//     aldrig skickas till webbläsaren, och så att vi kan cacha svaren
+//     (OpenSky har hård gräns på antal anrop per dygn för anonyma användare).
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 
 import express from "express";
 import path from "node:path";
@@ -19,12 +25,23 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+<<<<<<< HEAD
 const OPENSKY_USER = process.env.OPENSKY_USERNAME;
 const OPENSKY_PASS = process.env.OPENSKY_PASSWORD;
 const AERODATABOX_KEY = process.env.AERODATABOX_KEY;
 const AERODATABOX_HOST = "aerodatabox.p.rapidapi.com";
 
 // --- Enkel in-memory-cache -------------------------------------------------
+=======
+// Valfria inloggningsuppgifter för OpenSky. Utan dem fungerar allt ändå,
+// men med ett registrerat konto får man en högre daglig anropsgräns.
+// Sätts som miljövariabler, aldrig hårdkodat i koden.
+const OPENSKY_USER = process.env.OPENSKY_USERNAME;
+const OPENSKY_PASS = process.env.OPENSKY_PASSWORD;
+
+// --- Enkel in-memory-cache -------------------------------------------------
+// Nyckel: `${icao}:${type}` -> { expires, data }
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 const CACHE_TTL_MS = 60 * 1000; // 60 sekunder
 const cache = new Map();
 
@@ -37,6 +54,7 @@ function setCached(key, data) {
   cache.set(key, { data, expires: Date.now() + CACHE_TTL_MS });
 }
 
+<<<<<<< HEAD
 function airportRef({ icao = null, iata = null, name = null, municipality = null } = {}) {
   if (!icao && !iata && !name) return null;
   return { icao, iata, name, municipality };
@@ -141,6 +159,16 @@ const OPENSKY_WINDOW_HOURS = 3;
 async function fetchOpenSky(icao, type) {
   const now = Math.floor(Date.now() / 1000);
   const begin = now - OPENSKY_WINDOW_HOURS * 3600;
+=======
+// --- OpenSky-anrop -----------------------------------------------------
+// OpenSky har ingen "schemalagd avgång/ankomst"-data, bara faktiskt
+// observerade rörelser (ADS-B). Vi hämtar därför "senaste X timmarna".
+const WINDOW_HOURS = 3;
+
+async function fetchOpenSky(icao, type) {
+  const now = Math.floor(Date.now() / 1000);
+  const begin = now - WINDOW_HOURS * 3600;
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
   const end = now;
 
   const url = new URL(`https://opensky-network.org/api/flights/${type}`);
@@ -155,6 +183,7 @@ async function fetchOpenSky(icao, type) {
   }
 
   const res = await fetch(url, { headers });
+<<<<<<< HEAD
   if (res.status === 404) return [];
   if (!res.ok) throw new Error(`OpenSky svarade ${res.status} ${res.statusText}`);
   return res.json();
@@ -172,11 +201,33 @@ function mapOpenSkyFlight(raw, type) {
     terminal: null,
     gate: null,
     airline: null,
+=======
+
+  if (res.status === 404) {
+    // OpenSky svarar 404 om det inte finns någon trafik i fönstret - inte ett fel.
+    return [];
+  }
+  if (!res.ok) {
+    throw new Error(`OpenSky svarade ${res.status} ${res.statusText}`);
+  }
+  return res.json();
+}
+
+function mapFlight(raw, type) {
+  const otherAirport = type === "departure" ? raw.estArrivalAirport : raw.estDepartureAirport;
+  const timestamp = type === "departure" ? raw.firstSeen : raw.lastSeen;
+  return {
+    callsign: (raw.callsign || "").trim() || "Okänd",
+    icao24: raw.icao24,
+    otherAirport: otherAirport || null,
+    timestamp, // unix seconds
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
     estDepartureAirport: raw.estDepartureAirport || null,
     estArrivalAirport: raw.estArrivalAirport || null,
   };
 }
 
+<<<<<<< HEAD
 // --- Ruttuppslag via adsbdb.com (gratis, nyckelfritt) -----------------
 const ROUTE_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 timmar
 const routeCache = new Map();
@@ -255,6 +306,9 @@ async function getBoardFromOpenSky(icao, type) {
 // =====================================================================
 // API-routes
 // =====================================================================
+=======
+// --- API-routes ----------------------------------------------------------
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 
 app.get("/api/airports", (req, res) => {
   res.json(airports);
@@ -266,6 +320,7 @@ app.get("/api/board/:icao", async (req, res) => {
   const cacheKey = `${icao}:${type}`;
 
   const cached = getCached(cacheKey);
+<<<<<<< HEAD
   if (cached) return res.json({ ...cached, cached: true });
 
   let flights, source, windowHours;
@@ -303,6 +358,34 @@ app.get("/api/board/:icao", async (req, res) => {
   };
   setCached(cacheKey, payload);
   res.json({ ...payload, cached: false });
+=======
+  if (cached) {
+    return res.json({ ...cached, cached: true });
+  }
+
+  try {
+    const raw = await fetchOpenSky(icao, type);
+    const flights = raw
+      .map((f) => mapFlight(f, type))
+      .filter((f) => f.timestamp)
+      .sort((a, b) => b.timestamp - a.timestamp);
+
+    const payload = {
+      icao,
+      type,
+      windowHours: WINDOW_HOURS,
+      generatedAt: Math.floor(Date.now() / 1000),
+      flights,
+    };
+    setCached(cacheKey, payload);
+    res.json({ ...payload, cached: false });
+  } catch (err) {
+    console.error(err);
+    res.status(502).json({
+      error: "Kunde inte hämta data från OpenSky just nu. Försök igen om en liten stund.",
+    });
+  }
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 });
 
 // --- Statisk frontend ------------------------------------------------------
@@ -310,5 +393,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.listen(PORT, () => {
   console.log(`Flygplatstavlan körs på http://localhost:${PORT}`);
+<<<<<<< HEAD
   console.log(AERODATABOX_KEY ? "Datakälla: AeroDataBox (schema + förseningar)" : "Datakälla: OpenSky Network (reservläge, ingen AERODATABOX_KEY satt)");
+=======
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 });

@@ -1,5 +1,6 @@
 # Flygtavlan
 
+<<<<<<< HEAD
 En egen avgångar/ankomster-tavla. Node/Express-backend + ren HTML/CSS/JS-frontend,
 ingen build-process. Stödjer två datakällor:
 
@@ -24,6 +25,12 @@ ingen build-process. Stödjer två datakällor:
 Utan nyckel fungerar appen ändå, den använder då OpenSky-reservläget nedan.
 
 ## Viktig begränsning i reservläget (OpenSky) — läs detta
+=======
+En egen avgångar/ankomster-tavla, byggd runt [OpenSky Networks](https://opensky-network.org/)
+gratis, nyckelfria API. Node/Express-backend + ren HTML/CSS/JS-frontend, ingen build-process.
+
+## Viktig begränsning — läs detta först
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 
 Swedavias tavla bygger på flygbolagens **schemadata**: den vet vilka flyg som *ska* gå,
 och jämför det mot verkligheten för att räkna ut förseningar.
@@ -34,6 +41,7 @@ tavlan:
 
 - visar **senaste 3 timmarnas faktiska** avgångar/ankomster, inte kommande schemalagda flyg
 - **inte kan visa förseningar** (det finns ingen tidtabell att jämföra mot)
+<<<<<<< HEAD
 - kan sakna mindre flygplatser helt om de har få ADS-B-mottagare i närheten
 
 **Ursprung/destination:** OpenSkys egna fält för det (`estDepartureAirport`/
@@ -44,6 +52,11 @@ rutt via en community-databas. Den täcker de flesta reguljära linjeflyg men mi
 ofta privatflyg, taxiflyg, frakt och militärtrafik - dyker "Okänd flygplats" upp
 är det oftast därför, inte ett fel i koden.
 
+=======
+- ibland saknar destination/ursprungsflygplats om ADS-B-täckningen var dålig just då
+- kan sakna mindre flygplatser helt om de har få ADS-B-mottagare i närheten
+
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 Om du vill ha riktig schema- och förseningsdata måste du byta datakälla till något som
 **AeroDataBox** eller **AviationStack** (båda kräver en gratis API-nyckel). Backend-lagret
 är byggt så att det går att byta ut `fetchOpenSky()` i `server.js` mot ett anrop till en

@@ -10,7 +10,10 @@ const el = {
   clock: document.getElementById('clock'),
   refreshStatus: document.getElementById('refresh-status'),
   boardBody: document.getElementById('board-body'),
+<<<<<<< HEAD
   infoBanner: document.getElementById('info-banner'),
+=======
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 };
 
 let airports = [];
@@ -139,8 +142,11 @@ async function loadBoard() {
 }
 
 function renderBoard(data) {
+<<<<<<< HEAD
   updateInfoBanner(data);
 
+=======
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
   if (!data.flights || data.flights.length === 0) {
     el.boardBody.innerHTML = `<div class="empty-state">
       Ingen trafik registrerad de senaste ${data.windowHours} timmarna för den här flygplatsen.
@@ -148,6 +154,7 @@ function renderBoard(data) {
     return;
   }
 
+<<<<<<< HEAD
   el.boardBody.innerHTML = data.flights.map(f => rowHtml(f, data.type, data.source)).join('');
 }
 
@@ -205,10 +212,19 @@ function rowHtmlAeroDataBox(f, type) {
 function rowHtmlOpenSky(f, type) {
   const time = new Date(f.time * 1000).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
   const elapsedMin = Math.max(0, Math.round((Date.now() / 1000 - f.time) / 60));
+=======
+  el.boardBody.innerHTML = data.flights.map(f => rowHtml(f, data.type)).join('');
+}
+
+function rowHtml(f, type) {
+  const time = new Date(f.timestamp * 1000).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+  const elapsedMin = Math.max(0, Math.round((Date.now() / 1000 - f.timestamp) / 60));
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
   const elapsedLabel = elapsedMin < 1 ? 'nyss' : `för ${elapsedMin} min sedan`;
 
   const status = type === 'departure' ? `Avgått · ${elapsedLabel}` : `Landat · ${elapsedLabel}`;
 
+<<<<<<< HEAD
   const otherSide = type === 'departure' ? f.destination : f.origin;
   const otherLabel = airportLabel(otherSide);
   const route = type === 'departure'
@@ -217,22 +233,38 @@ function rowHtmlOpenSky(f, type) {
 
   const flightLabel = f.callsign || 'Okänt flygnr';
   const airlineLine = f.airline ? `<span class="flight-airline">${escapeHtml(f.airline)}</span>` : '';
+=======
+  const otherName = f.otherAirport ? airportLabel(f.otherAirport) : 'Okänd flygplats';
+  const route = type === 'departure'
+    ? `${state.airport.iata}<span class="arrow">→</span>${otherName}`
+    : `${otherName}<span class="arrow">→</span>${state.airport.iata}`;
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 
   return `
     <div class="row">
       <span class="col-time">${time}</span>
+<<<<<<< HEAD
       <span class="col-flight">${escapeHtml(flightLabel)}${airlineLine}</span>
+=======
+      <span class="col-flight">${escapeHtml(f.callsign)}</span>
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
       <span class="col-route">${route}</span>
       <span class="col-status">${status}</span>
     </div>
   `;
 }
 
+<<<<<<< HEAD
 function airportLabel(airport) {
   if (!airport) return 'Okänd flygplats';
   // Föredra IATA-koden (kortast, mest igenkännbar); fall tillbaka på ICAO,
   // stad eller namn beroende på vad ruttuppslaget faktiskt gav oss.
   return airport.iata || airport.icao || airport.municipality || airport.name || 'Okänd flygplats';
+=======
+function airportLabel(icao) {
+  const a = airportsByIcao.get(icao);
+  return a ? a.iata : icao;
+>>>>>>> 46b59df993ea84d367c17cf3b26e18a9b3970054
 }
 
 // ---------- Auto-refresh ----------
