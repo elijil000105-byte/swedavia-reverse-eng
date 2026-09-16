@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Flygtavlan</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">✈</span>
+    <div class="brand-text">
+      <h1>Flygtavlan</h1>
+      <p class="brand-sub">Live rörelser via OpenSky Network</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="airport-picker">
+      <label for="airport-search">Flygplats</label>
+      <input id="airport-search" type="text" placeholder="Sök stad, IATA eller ICAO…" autocomplete="off">
+      <div id="airport-results" class="airport-results hidden"></div>
+    </div>
+
+    <div class="type-toggle" role="tablist" aria-label="Visa avgångar eller ankomster">
+      <button id="tab-departure" class="tab active" role="tab" aria-selected="true">Avgångar</button>
+      <button id="tab-arrival" class="tab" role="tab" aria-selected="false">Ankomster</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="board-meta">
+    <div class="current-airport">
+      <h2 id="airport-name">Välj en flygplats</h2>
+      <span id="airport-code" class="airport-code"></span>
+    </div>
+    <div class="meta-right">
+      <span id="clock" class="clock">--:--:--</span>
+      <span id="refresh-status" class="refresh-status">—</span>
+    </div>
+  </div>
+
+  <div id="info-banner" class="info-banner">
+    OpenSky har ingen schemadata, bara faktiskt observerade flygningar. Tavlan visar därför
+    <strong>senaste 3 timmarnas</strong> verkliga avgångar/ankomster, inte kommande schemalagda flyg –
+    och kan inte visa förseningar mot tidtabell.
+  </div>
+
+  <section class="board-wrap">
+    <div class="board-head">
+      <span class="col col-time">Tid</span>
+      <span class="col col-flight">Flyg</span>
+      <span class="col col-route">Rutt</span>
+      <span class="col col-status">Status</span>
+    </div>
+    <div id="board-body" class="board-body">
+      <div class="empty-state">Sök och välj en flygplats ovan för att se trafik.</div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Data: <a href="https://opensky-network.org/" target="_blank" rel="noopener">OpenSky Network</a> (ADS-B, inte officiell tidtabellsdata).</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
